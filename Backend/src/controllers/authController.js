@@ -1,4 +1,4 @@
-import prisma from "../config/db.js";
+import User from "../models/user.model.js";
 import bcrypt from "bcryptjs"
 import { generateTokenAndSetCookie } from "../utils/generateTokenAndSetCookie.js";
 
@@ -12,9 +12,7 @@ export const signup = async (req, res) => {
 
         const key = String(email).toLowerCase().trim()
 
-        const userAlreadyExists = await prisma.user.findUnique({
-            where: { email: key }
-        })
+        const userAlreadyExists = await User.findOne({ email: key });
 
         if (userAlreadyExists) {
             return res.status(400).json({ success: false, message: "User already exists" })
@@ -22,21 +20,21 @@ export const signup = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const createUser = await prisma.user.create({
-            data: {
-                name: name.trim().charAt(0).toUpperCase() + name.trim().slice(1),
-                email: key,
-                password: hashedPassword
-            }
-        })
+        const createUser = await User.create({
+            name: name.trim().charAt(0).toUpperCase() + name.trim().slice(1),
+            email: key,
+            password: hashedPassword
+        });
 
         // jwt
-        generateTokenAndSetCookie(res, createUser.id)
+        generateTokenAndSetCookie(res, createUser._id);
+
+        const { password: _, ...userWithoutPassword } = createUser._doc;
 
         res.status(201).json({
             success: true,
             message: "user Created Successfully",
-            user: { ...createUser, password: undefined } // not passing the password
+            user: userWithoutPassword
         })
 
     }
@@ -57,11 +55,7 @@ export const login = async (req, res) => {
 
         const key = String(email).toLowerCase().trim()
 
-        const findUser = await prisma.user.findUnique({
-            where: {
-                email: key
-            }
-        })
+        const findUser = await User.findOne({ email: key });
 
         if (!findUser) {
             return res.status(401).json({ success: false, message: "Invalid credentials" })
@@ -73,18 +67,15 @@ export const login = async (req, res) => {
             return res.status(401).json({ success: false, message: "Invalid credentials" })
         }
 
-        generateTokenAndSetCookie(res, findUser.id);
+        generateTokenAndSetCookie(res, findUser._id);
 
-        await prisma.user.update({
-            where: { email: key },
-            data: {
-                lastLogin: new Date()
-            }
-        })
+        await User.findOneAndUpdate({ email: key }, { lastLogin: new Date() });
+
+        const { password: _, ...userWithoutPassword } = findUser._doc;
 
         res.status(200).json({
             success: true, message: "Logged in successfully",
-            user: { ...findUser, password: undefined }
+            user: userWithoutPassword
         })
     }
     catch (err) {
@@ -101,14 +92,13 @@ export const logout = (req, res) => {
 export const checkAuth = async (req, res) => {
     const id = req.userID
     try {
-        const findUser = await prisma.user.findUnique({
-            where: { id }
-        })
+        const findUser = await User.findById(id);
 
         if (!findUser) {
             return res.status(400).json({ success: false, message: "User not found" });
         }
-        res.status(200).json({ success: true, user: { ...findUser, password: undefined } })
+        const { password: _, ...userWithoutPassword } = findUser._doc;
+        res.status(200).json({ success: true, user: userWithoutPassword })
     }
     catch (err) {
         throw new Error(err.message)

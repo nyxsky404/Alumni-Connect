@@ -7,6 +7,9 @@ import testRoute from "../src/routes/testRoute.js"
 
 import dotenv from "dotenv";
 dotenv.config();
+import connectDB from "./config/db.js";
+
+connectDB();
 
 app.use(express.json());
 app.use(cookieParser());
