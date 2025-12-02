@@ -7,12 +7,13 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 
 // Import routes
-import authRoute from "./routes/authRoute.js";
+import authRoute from "./routes/auth.route.js";
 import testRoute from "./routes/testRoute.js";
 import clubsRoute from "./routes/clubs.js";
 import userRoute from "./routes/user.js";
 import opportunityRoute from "./routes/opportunity.js";
-import messageRoute from "./routes/message.js";
+import messageRoutes from "./routes/message.route.js";
+import meetingRoutes from "./routes/meeting.route.js";
 
 // Configure environment variables
 dotenv.config();
@@ -34,7 +35,8 @@ app.use("/api/auth", authRoute);
 app.use("/api/clubs", clubsRoute);
 app.use("/api/users", userRoute);
 app.use("/api/opportunities", opportunityRoute);
-app.use("/api/messages", messageRoute);
+app.use('/api/messages',messageRoutes);
+app.use("/api/meeting", meetingRoutes);
 
 // Start server
 const port = process.env.PORT || 3000;
