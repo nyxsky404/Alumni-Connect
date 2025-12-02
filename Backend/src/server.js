@@ -8,6 +8,7 @@ import connectDB from "./config/db.js";
 
 // Import routes
 import authRoute from "./routes/auth.route.js";
+import eventRoute from "./routes/event.route.js";
 import testRoute from "./routes/testRoute.js";
 import clubsRoute from "./routes/clubs.js";
 import userRoute from "./routes/user.js";
@@ -32,6 +33,7 @@ app.use(cors());
 // Routes
 app.use("/", testRoute);
 app.use("/api/auth", authRoute);
+app.use("/api/events", eventRoute);
 app.use("/api/clubs", clubsRoute);
 app.use("/api/users", userRoute);
 app.use("/api/opportunities", opportunityRoute);
